@@ -1,3 +1,5 @@
-selenium
+pytest == 4.6.3
+selenium == 4.0.0a1
 behave
 webdriver-manager
+
