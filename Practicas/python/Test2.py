@@ -22,10 +22,11 @@ class TestLogin():
             "USER": "USER" + str(self.timestamp),
             "PASS": "PASS" + str(self.timestamp)
         }
-        print(self.vars)
+        # print(self.vars)
 
     def teardown_method(self, method):
         self.driver.quit()
+        print(self.vars)
 
     def test_register(self):
         self.driver.get("https://www.demoblaze.com/index.html")
@@ -49,7 +50,7 @@ class TestLogin():
         self.driver.find_element(By.ID, "login2").click()
         WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located((By.ID, "loginusername")))
         self.driver.find_element(By.ID, "loginusername").click()
-        self.driver.find_element(By.ID, "loginusername").send_keys(self.vars["USER"]+"A")
+        self.driver.find_element(By.ID, "loginusername").send_keys(self.vars["USER"] + "A")
         self.driver.find_element(By.ID, "loginpassword").click()
         self.driver.find_element(By.ID, "loginpassword").send_keys("test")
         self.driver.find_element(By.XPATH, "//div[@id=\'logInModal\']/div/div/div[3]/button[2]").click()
@@ -58,7 +59,6 @@ class TestLogin():
                                             'confirmation popup to appear.')
 
         assert self.driver.switch_to.alert.text == "User does not exist."
-        time.sleep(1)
 
     def test_login_with_error_in_password(self):
         self.driver.get("https://www.demoblaze.com/index.html")
@@ -74,7 +74,6 @@ class TestLogin():
                                             'Timed out waiting for PA creation ' +
                                             'confirmation popup to appear.')
         assert self.driver.switch_to.alert.text == "Wrong password."
-        time.sleep(1)
 
     def test_login_sucessfull(self):
         self.driver.get("https://www.demoblaze.com/index.html")
@@ -94,14 +93,10 @@ class TestLogin():
         expected = "Welcome " + self.vars["USER"]
         really = self.driver.find_element(By.ID, "nameofuser").text
 
-        assert(
-                self.driver.find_element(By.ID, "nameofuser").text == expected,
-                f'Not found {expected}, found : {really}'
-        )
-        time.sleep(1)
+        assert self.driver.find_element(By.ID, "nameofuser").text == expected, \
+               f'Not found {expected}, found : {really}'
 
-
-    def test_Navigate_with_user(self):
+    def test_prepare_the_shopping_cart(self):
         self.test_login_sucessfull()
         self.driver.find_element(By.LINK_TEXT, "Laptops").click()
         WebDriverWait(self.driver, 30).until(
@@ -117,10 +112,23 @@ class TestLogin():
         assert self.driver.switch_to.alert.text == "Product added."
         expected = "Product added."
         really = self.driver.switch_to.alert.text
-        assert(
-                self.driver.switch_to.alert.text == expected,
-                f'Not found {expected}, found : {really}'
-        )
+        assert self.driver.switch_to.alert.text == expected,\
+               f'Not found {expected}, found : {really}'
         self.driver.switch_to.alert.accept()
+
+    def test_finalize_purchase(self):
+        self.test_prepare_the_shopping_cart()
+        self.driver.find_element(By.ID, "cartur").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".btn-success").click()
+        WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located((By.ID, "name")))
+        self.driver.find_element(By.ID, "name").click()
+        self.driver.find_element(By.ID, "name").send_keys("Usuario")
+        self.driver.find_element(By.ID, "country").send_keys("Mundo")
+        self.driver.find_element(By.ID, "city").send_keys("Ciudad")
+        self.driver.find_element(By.ID, "card").send_keys("Tarjeta de credito")
+        self.driver.find_element(By.ID, "month").send_keys("mes")
+        self.driver.find_element(By.ID, "year").send_keys("año")
+        self.driver.find_element(By.CSS_SELECTOR, "#orderModal .btn-primary").click()
+        self.vars["test"] = self.driver.find_element(By.CSS_SELECTOR, ".lead").text
+        self.driver.find_element(By.CSS_SELECTOR, ".confirm").click()
         time.sleep(10)
-        self.driver.close()
